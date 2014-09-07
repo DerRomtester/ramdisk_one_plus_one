@@ -1,10 +1,4 @@
-# SuperSU daemonsu
-service daemonsu /system/xbin/daemonsu --auto-daemon
-    class core
-    user root
-    group root
-
-# Superuser su_daemon
+# su daemon
 service su_daemon /system/xbin/su --daemon
     oneshot
 
