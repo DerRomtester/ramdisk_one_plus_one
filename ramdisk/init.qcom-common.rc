@@ -19,7 +19,7 @@ import /init.qcom.usb.rc
 on early-init
     mount debugfs debugfs /sys/kernel/debug
     chown system system /sys/kernel/debug/kgsl/proc
-    write /sys/block/mmcblk0/queue/scheduler noop
+    write /sys/block/mmcblk0/queue/scheduler fiops
     write /sys/block/mmcblk0/bdi/read_ahead_kb 512
 
 on init
@@ -323,12 +323,12 @@ on property:init.svc.bootanim=stopped
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
     write /dev/cpuctl/apps/cpu.notify_on_migrate 1
 
-    write /sys/block/mmcblk0/queue/scheduler row
+    write /sys/block/mmcblk0/queue/scheduler fiops
     start mpdecision
 
 on property:init.svc.bootanim=running
-    # Switch to NOOP while booting
-    write /sys/block/mmcblk0/queue/scheduler noop
+    # Switch to fiops while booting
+    write /sys/block/mmcblk0/queue/scheduler fiops
 
 service rmt_storage /system/bin/rmt_storage
     class core
