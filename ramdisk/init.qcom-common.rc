@@ -34,11 +34,9 @@ on early-boot
 
 on boot
     # bring CPUs online
-    write /sys/module/msm_thermal/core_control/enabled 0
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
-    write /sys/module/msm_thermal/core_control/enabled 1
 
     # bluetooth
     chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
@@ -164,7 +162,7 @@ on post-fs-data
     mkdir /persist/sensors 0775 system root
     write /persist/sensors/sensors_settings 1
     chmod 0644 /persist/sensors/sensors_settings
-    chown system root /persist/sensors/sensors_settings
+    chown system.root /persist/sensors/sensors_settings
     mkdir /data/misc/sensors 0775 system system
     restorecon_recursive /data/misc/sensors
 
@@ -229,13 +227,6 @@ on post-fs-data
     chown system graphics /sys/devices/virtual/graphics/fb0/panel_calibration
     chmod 0660 /sys/devices/virtual/graphics/fb0/panel_calibration
 
-    chown system system /sys/class/timed_output/vibrator/vtg_level
-    chown system system /sys/class/timed_output/vibrator/vtg_max
-    chown system system /sys/class/timed_output/vibrator/vtg_min
-    chmod 0644 /sys/class/timed_output/vibrator/vtg_level
-    chmod 0644 /sys/class/timed_output/vibrator/vtg_max
-    chmod 0644 /sys/class/timed_output/vibrator/vtg_min
-
     setprop vold.post_fs_data_done 1
 
 on charger
@@ -246,7 +237,6 @@ on charger
     write /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled 1
     write /sys/module/msm_pm/modes/cpu3/power_collapse/suspend_enabled 1
     write /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled 1
-    write /sys/module/msm_thermal/core_control/enabled 0
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
@@ -258,7 +248,6 @@ on charger
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq 268800
     write /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq 268800
     write /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq 268800
-    write /sys/module/msm_thermal/core_control/enabled 1
     write /sys/devices/system/cpu/cpu1/online 0
     write /sys/devices/system/cpu/cpu2/online 0
     write /sys/devices/system/cpu/cpu3/online 0
@@ -313,18 +302,23 @@ on property:init.svc.bootanim=stopped
     write /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq 1190400
     write /sys/devices/system/cpu/cpufreq/interactive/io_is_busy 1
     write /sys/devices/system/cpu/cpufreq/interactive/target_loads "85 1500000:90 1800000:70"
-    write /sys/devices/system/cpu/cpufreq/interactive/min_sample_time 40000
+    write /sys/devices/system/cpu/cpufreq/interactive/min_sample_time "40000 1700000:80000"
     write /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor 100000
 
     write /sys/module/cpu_boost/parameters/boost_ms 20
-    write /sys/module/cpu_boost/parameters/sync_threshold 1728000
-    write /sys/module/cpu_boost/parameters/input_boost_freq 1497600
+    write /sys/module/cpu_boost/parameters/sync_threshold 1190400
+    write /sys/module/cpu_boost/parameters/input_boost_freq 1190400
     write /sys/module/cpu_boost/parameters/input_boost_ms 40
-    write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
     write /dev/cpuctl/apps/cpu.notify_on_migrate 1
 
-    write /sys/block/mmcblk0/queue/scheduler row
-#   start mpdecision
+    write /sys/block/mmcblk0/queue/scheduler deadline
+    write /sys/block/mmcblk0/queue/iosched/fifo_batch 1
+    write /sys/block/mmcblk0/queue/iosched/front_merges 0
+    write /sys/block/mmcblk0/queue/iosched/writes_starved 8
+
+    write /sys/class/timed_output/vibrator/vtg_level 31
+    exec /system/bin/sh /init.fk.sh
+#    start mpdecision
 
 on property:init.svc.bootanim=running
     # Switch to NOOP while booting
@@ -542,6 +536,7 @@ service thermal-engine /system/bin/thermal-engine
    class main
    user root
    group radio system
+   disabled
 
 service time_daemon /system/bin/time_daemon
     class late_start
@@ -616,32 +611,3 @@ service ppd /system/bin/mm-pp-daemon
 
 on property:init.svc.surfaceflinger=stopped
     stop ppd
-
-# diag logging
-service diag_mdlog_start /system/bin/diag_mdlog
-    class late_start
-    user sdcard_rw
-    group system qcom_diag sdcard_rw sdcard_r media_rw
-    disabled
-    oneshot
-
-service diag_mdlog_stop /system/bin/diag_mdlog -k
-    class late_start
-    user sdcard_rw
-    group system qcom_diag sdcard_rw sdcard_r media_rw
-    disabled
-    oneshot
-
-service qlogd /system/xbin/qlogd
-    class main
-    disabled
-on property:persist.sys.qlogd=1
-    start qlogd
-on property:persist.sys.qlogd=0
-    stop qlogd
-
-service ssr_diag /system/bin/ssr_diag
-    class late_start
-    disabled
-    user system
-    group system
