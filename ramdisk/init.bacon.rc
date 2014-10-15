@@ -42,6 +42,7 @@ on init
     symlink /mnt/shell/emulated/0 /storage/emulated/legacy
 
 on post-fs
+    exec inject_new_wlan_firmware.sh
     export_rc /system/etc/init.cne.rc
 
 on post-fs-data
