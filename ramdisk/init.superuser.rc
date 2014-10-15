@@ -1,4 +1,4 @@
-# su daemon
+# Superuser su_daemon
 service su_daemon /system/xbin/su --daemon
     oneshot
 
