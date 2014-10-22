@@ -1,0 +1,4 @@
+*.img
+ramdisk-new.cpio*
+split_img/boot.img-dtb
+split_img/boot.img-zImage
