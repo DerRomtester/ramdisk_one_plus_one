@@ -320,6 +320,7 @@ on property:init.svc.bootanim=stopped
 
 on property:init.svc.bootanim=running
     # Switch to NOOP while booting
+    write /sys/block/mmcblk0/queue/scheduler noop
 
 service rmt_storage /system/bin/rmt_storage
     class core
