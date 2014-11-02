@@ -1,11 +1,6 @@
 #!/system/bin/sh
 
-PATH=/sbin:/system/sbin:/system/bin:/system/xbin
-export PATH
-
 mount -o rw,remount /system
-
-mv /system/bin/thermal-engine /system/bin/thermal-engine.bak
 
 if [ ! -e /system/etc/init.d ]; then
   mkdir /system/etc/init.d

@@ -249,7 +249,6 @@
 /sys/module/msm_pm/modes(/.*)?         u:object_r:sysfs_mpdecision:s0
 /data/system/default_values            u:object_r:mpdecision_state:s0
 
-/system/bin/thermal-engine             u:object_r:thermald_exec:s0
 /dev/msm_thermal_query                 u:object_r:thermal_device:s0
 
 /dev/cpu_dma_latency                   u:object_r:power_control_device:s0
