@@ -65,3 +65,5 @@ nfc.                    u:object_r:nfc_prop:s0
 #line 1 "device/qcom/sepolicy/common/property_contexts"
 wc_transport.              u:object_r:bluetooth_prop:s0
 usb_uicc.                  u:object_r:uicc_prop:s0
+#line 1 "device/oppo/msm8974-common/sepolicy/property_contexts"
+camera.                     u:object_r:camera_prop:s0

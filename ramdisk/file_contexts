@@ -249,21 +249,6 @@
 /mnt/asec/[^/]+/[^/]+\.zip  u:object_r:asec_public_file:s0
 /mnt/asec/[^/]+/lib(/.*)?   u:object_r:asec_public_file:s0
 /data/app-asec(/.*)?        u:object_r:asec_image_file:s0
-#line 1 "vendor/cm/sepolicy/file_contexts"
-/cache/dalvik-cache(/.*)? u:object_r:dalvikcache_data_file:s0
-
-# Auditd is a logging daemon. Put it into logd's context
-/system/bin/auditd        u:object_r:logd_exec:s0
-/data/misc/audit(/.*)?    u:object_r:auditd_log:s0
-
-#############################
-# performance-related sysfs files (CM)
-/sys/kernel/mm/ksm(/.*)?       --          u:object_r:sysfs_writable:s0
-/sys/devices/system/cpu.*/cpufreq(/.*)? --  u:object_r:sysfs_devices_system_cpu:s0
-/sys/block/mmcblk0/queue/scheduler  --    u:object_r:sysfs_writable:s0
-
-/data/hostapd(/.*)?         u:object_r:wifi_data_file:s0
-/data/misc/radio(/.*)?      u:object_r:radio_data_file:s0
 #line 1 "device/qcom/sepolicy/common/file_contexts"
 ###################################
 # Dev nodes
@@ -340,6 +325,7 @@
 /dev/socket/qlogd                               u:object_r:qlogd_socket:s0
 /dev/socket/ipacm_log_file                      u:object_r:ipacm_socket:s0
 /dev/socket/dpmd                                u:object_r:dpmd_socket:s0
+/dev/socket/dpmwrapper                          u:object_r:dpmwrapper_socket:s0
 /dev/socket/pps                                 u:object_r:pps_socket:s0
 /dev/socket/rild2                               u:object_r:rild_socket:s0
 /dev/socket/rild2-debug                         u:object_r:rild_debug_socket:s0
@@ -465,7 +451,7 @@
 /data/rfs.*                                                         u:object_r:rfs_data_file:s0
 /data/camera(/.*)?                                                  u:object_r:camera_socket:s0
 /data/system/sensors(/.*)?                                          u:object_r:sensors_data_file:s0
-/data/time/*                                                        u:object_r:time_data_file:s0
+/data/time(/.*)?                                                    u:object_r:time_data_file:s0
 /data/nfc(/.*)?                                                     u:object_r:nfc_data_file:s0
 /data/system/perfd(/.*)?                                            u:object_r:mpctl_data_file:s0
 /data/misc/perfd(/.*)?                                              u:object_r:mpctl_socket:s0
@@ -547,3 +533,35 @@
 /system/bin/test-fake-ap                        u:object_r:location_exec:s0
 /system/bin/loc_api_app                         u:object_r:location_exec:s0
 /system/bin/test_loc_api_client                 u:object_r:location_exec:s0
+#line 1 "device/oppo/msm8974-common/sepolicy/file_contexts"
+# We have a couple of non-standard NV partitions
+/dev/block/bootdevice/by-name/oppodycnvbk          u:object_r:modem_efs_partition_device:s0
+/dev/block/bootdevice/by-name/oppostanvbk          u:object_r:modem_efs_partition_device:s0
+#line 1 "vendor/cm/sepolicy/file_contexts"
+/cache/dalvik-cache(/.*)? u:object_r:dalvikcache_data_file:s0
+
+# Auditd is a logging daemon. Put it into logd's context
+/system/bin/auditd        u:object_r:logd_exec:s0
+/data/misc/audit(/.*)?    u:object_r:auditd_log:s0
+
+/system/bin/sysinit       u:object_r:sysinit_exec:s0
+
+# For minivold in recovery
+/sbin/minivold            u:object_r:vold_exec:s0
+
+#############################
+# performance-related sysfs files (CM)
+/sys/kernel/mm/ksm(/.*)?       --          u:object_r:sysfs_writable:s0
+/sys/devices/system/cpu.*/cpufreq(/.*)? --  u:object_r:sysfs_devices_system_cpu:s0
+/sys/block/mmcblk0/queue/scheduler  --    u:object_r:sysfs_writable:s0
+
+/data/hostapd(/.*)?         u:object_r:wifi_data_file:s0
+/data/misc/radio(/.*)?      u:object_r:radio_data_file:s0
+
+#############
+# Superuser's control sockets
+/dev/com.android.settings.daemon(/.*)?   u:object_r:superuser_device:s0
+/dev/com.android.settings(/.*)?   u:object_r:superuser_device:s0
+
+# Expansion of these hooks is a bit unconventional
+/cache/com.cyanogenmod.keyhandler.dex   u:object_r:dalvikcache_data_file:s0
