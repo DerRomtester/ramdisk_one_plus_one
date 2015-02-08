@@ -16,7 +16,6 @@ if [ -z "$(ls split_img/* 2> /dev/null)" -o -z "$(ls ramdisk/* 2> /dev/null)" ];
   return 1;
 fi;
 
-clear;
 echo "\nAndroid Image Kitchen - RepackImg Script";
 echo "by osm0sis @ xda-developers\n";
 
