@@ -40,7 +40,7 @@ case $args in
       xz) repackcmd="xz -1 -Ccrc32";;
       lzma) repackcmd="xz -Flzma";;
       bzip2) compext=bz2;;
-      lz4) repackcmd="$bin/lz4 -l stdin stdout";;
+      lz4) repackcmd="$bin/lz4 -l -9 -f stdin stdout";;
     esac;
     cd ramdisk;
     find . | cpio -o -H newc | $repackcmd > ../ramdisk-new.cpio.$compext;
