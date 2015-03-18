@@ -392,6 +392,7 @@ on property:init.svc.bootanim=stopped
     write /sys/devices/system/cpu/cpufreq/conservative/down_threshold 40
     write /sys/devices/system/cpu/cpufreq/conservative/input_boost_freq 2457600
 
+    write /sys/kernel/dyn_fsync/Dyn_fsync_active 1
     write /sys/class/timed_output/vibrator/vtg_level 25
 
 on property:init.svc.bootanim=running
