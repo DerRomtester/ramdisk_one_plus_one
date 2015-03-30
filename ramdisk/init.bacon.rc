@@ -15,7 +15,6 @@
 #
 
 import /init.qcom-common.rc
-import /init.performance_profiles.rc
 
 on fs
     mount_all ./fstab.bacon
