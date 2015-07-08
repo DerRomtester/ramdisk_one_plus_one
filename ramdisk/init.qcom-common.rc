@@ -33,12 +33,16 @@ on early-boot
     write /sys/kernel/boot_adsp/boot 1
 
 on boot
+    write /sys/block/mmcblk0/queue/nomerges 1
+    write /sys/block/mmcblk0/queue/rq_affinity 2
+    write /sys/block/mmcblk0/queue/add_random 0
+    write /sys/block/mmcblk0/queue/read_ahead_kb 1024
+
     # bring CPUs online
     write /sys/module/msm_thermal/core_control/enabled 0
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
-    write /sys/module/msm_thermal/core_control/enabled 1
 
     # bluetooth
     chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power
@@ -320,7 +324,6 @@ on charger
     write /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled 1
     write /sys/module/msm_pm/modes/cpu3/power_collapse/suspend_enabled 1
     write /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled 1
-    write /sys/module/msm_thermal/core_control/enabled 0
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
@@ -332,7 +335,6 @@ on charger
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq 300000
     write /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq 300000
     write /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq 300000
-    write /sys/module/msm_thermal/core_control/enabled 1
     write /sys/devices/system/cpu/cpu1/online 0
     write /sys/devices/system/cpu/cpu2/online 0
     write /sys/devices/system/cpu/cpu3/online 0
@@ -375,31 +377,27 @@ on property:service.bootanim.exit=1
     chmod 664 /sys/devices/system/cpu/cpu2/online
     chmod 664 /sys/devices/system/cpu/cpu3/online
 
-on property:sys.boot_completed=1
+on property:init.svc.bootanim=stopped
     # Switch to ROW and balanced mode after boot for better UX
     write /sys/class/devfreq/qcom,cpubw.40/governor "cpubw_hwmon"
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
-    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor "interactive"
-    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor "interactive"
-    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor "interactive"
-    write /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay "20000 1400000:40000 1700000:20000"
-    write /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load 75
-    write /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq 1190400
-    write /sys/devices/system/cpu/cpufreq/interactive/io_is_busy 1
-    write /sys/devices/system/cpu/cpufreq/interactive/target_loads "85 1500000:90 1800000:70"
-    write /sys/devices/system/cpu/cpufreq/interactive/min_sample_time 40000
-    write /sys/devices/system/cpu/cpufreq/interactive/max_freq_hysteresis 100000
-    write /sys/devices/system/cpu/cpufreq/interactive/timer_rate 30000
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "conservative"
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor "conservative"
     write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor "conservative"
-    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor "conservative" 
+    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor "conservative"
+    write /sys/class/misc/mako_hotplug_control/load_threshold 65
+    write /sys/class/misc/mako_hotplug_control/high_load_counter 5
     write /sys/devices/system/cpu/cpufreq/conservative/up_threshold 90
     write /sys/devices/system/cpu/cpufreq/conservative/freq_step 10
-    write /sys/devices/system/cpu/cpufreq/conservative/down_threshold 40 
+    write /sys/devices/system/cpu/cpufreq/conservative/down_threshold 40
+    write /sys/devices/system/cpu/cpufreq/conservative/input_boost_freq 2457600    
+    write /sys/kernel/mm/ksm/sleep_millisecs 1500
+    write /sys/kernel/mm/ksm/pages_to_scan 256
+    write /sys/kernel/mm/ksm/deferred_timer 1
+    write /sys/kernel/mm/ksm/run 1
 
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
-    write /sys/block/mmcblk0/queue/scheduler bfq
+    write /dev/cpuctl/apps/cpu.notify_on_migrate 0
+    write /sys/class/timed_output/vibrator/vtg_level 25
 
 on property:init.svc.bootanim=running
     # Switch to NOOP while booting
@@ -584,6 +582,14 @@ service qcamerasvr /system/bin/mm-qcamera-daemon
     user camera
     group camera system inet input graphics
 
+# bugreport is triggered by holding down volume down, volume up and power
+service bugreport /system/bin/dumpstate -d -p -B \
+        -o /data/data/com.android.shell/files/bugreports/bugreport
+    class main
+    disabled
+    oneshot
+    keycodes 114 115 116
+
 service mpdecision /system/bin/mpdecision --avg_comp
    class main
    user root
@@ -688,37 +694,3 @@ service pfm /system/bin/pfm
     class late_start
     user system
     group system drmrpc mount
-
-# CM Performance Profiles
-on property:sys.perf.profile=0
-    write /sys/devices/system/cpu/cpu1/online 1
-    write /sys/devices/system/cpu/cpu2/online 1
-    write /sys/devices/system/cpu/cpu3/online 1
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1036800
-    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq 1036800
-    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq 1036800
-    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq 1036800
-    write /sys/class/misc/mako_hotplug_control/load_threshold 100
-    write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/max_freq 330000000
-
-on property:sys.perf.profile=1
-   write /sys/devices/system/cpu/cpu1/online 1
-    write /sys/devices/system/cpu/cpu2/online 1
-    write /sys/devices/system/cpu/cpu3/online 1
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2457600
-    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq 2457600
-    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq 2457600
-    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq 2457600
-    write /sys/class/misc/mako_hotplug_control/load_threshold 80
-    write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/max_freq 578000000
-
-on property:sys.perf.profile=2
-    write /sys/devices/system/cpu/cpu1/online 1
-    write /sys/devices/system/cpu/cpu2/online 1
-    write /sys/devices/system/cpu/cpu3/online 1
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2457600
-    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq 2457600
-    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq 2457600
-    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq 2457600
-    write /sys/class/misc/mako_hotplug_control/load_threshold 0
-    write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/max_freq 578000000
