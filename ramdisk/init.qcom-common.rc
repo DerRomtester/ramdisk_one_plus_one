@@ -195,6 +195,9 @@ on post-fs-data
     # Create directory used by audio subsystem
     mkdir /data/misc/audio 0770 audio audio
 
+    # Force regeneration of sensor registry
+    rm /data/misc/sensors/sns.reg
+
     # Create directory used by sensor subsystem
     mkdir /persist/sensors 0775 system root
     write /persist/sensors/sensors_settings 1
@@ -376,14 +379,6 @@ on property:service.bootanim.exit=1
     chmod 664 /sys/devices/system/cpu/cpu2/online
     chmod 664 /sys/devices/system/cpu/cpu3/online
 
-on property:init.svc.bootanim=stopped
-    # Set light thermal restrictions while optimizing apps
-    # [throttle_freq, throttle_temp, unthrottle_temp]
-    write /sys/kernel/msm_thermal/low_thresh "1728000 62 57"
-    write /sys/kernel/msm_thermal/mid_thresh "1574400 68 61"
-    write /sys/kernel/msm_thermal/high_thresh "1267200 72 69"
-    write /sys/kernel/msm_thermal/enabled 1
-
 on property:sys.boot_completed=1
     # Switch to Deadline and balanced mode after boot for better UX
     write /sys/class/devfreq/qcom,cpubw.40/governor "msm_cpufreq"
@@ -403,15 +398,11 @@ on property:sys.boot_completed=1
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor "smartmax"
     write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor "smartmax"
     write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor "smartmax"
-    write /sys/kernel/cpu_input_boost/boost_freqs "960000 883200 729600"
-    write /sys/kernel/cpu_input_boost/enabled 1
+    write /sys/module/cpu_boost/parameters/boost_ms 20
+    write /sys/module/cpu_boost/parameters/sync_threshold 1728000
+    write /sys/module/cpu_boost/parameters/input_boost_freq 1497600
+    write /sys/module/cpu_boost/parameters/input_boost_ms 40
     write /sys/block/mmcblk0/queue/scheduler deadline
-    write /sys/kernel/msm_thermal/enabled 0
-    write /sys/kernel/msm_thermal/low_thresh "1574400 52 47"
-    write /sys/kernel/msm_thermal/mid_thresh "1267200 57 54"
-    write /sys/kernel/msm_thermal/high_thresh "960000 64 61"
-    write /sys/kernel/msm_thermal/enabled 1
-    start mpdecision
 
 on property:init.svc.bootanim=running
     # Switch to NOOP while booting
@@ -701,7 +692,6 @@ service pfm /system/bin/pfm
 
 # CM Performance Profiles
 on property:sys.perf.profile=0
-    stop mpdecision
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
@@ -711,10 +701,8 @@ on property:sys.perf.profile=0
     write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor "conservative"
     write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor "conservative"
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor "powersave"
-    start mpdecision
 
 on property:sys.perf.profile=1
-    stop mpdecision
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
@@ -732,10 +720,8 @@ on property:sys.perf.profile=1
     write /sys/devices/system/cpu/cpufreq/interactive/max_freq_hysteresis 100000
     write /sys/devices/system/cpu/cpufreq/interactive/timer_rate 30000
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
-    start mpdecision
 
 on property:sys.perf.profile=2
-    stop mpdecision
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
