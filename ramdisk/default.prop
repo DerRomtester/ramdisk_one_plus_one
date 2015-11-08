@@ -6,10 +6,18 @@ ro.secure=1
 ro.allow.mock.location=0
 ro.debuggable=1
 ro.zygote=zygote32
-persist.sys.usb.config=mtp
-camera2.portability.force_api=1
-dalvik.vm.dex2oat-Xms=64m
-dalvik.vm.dex2oat-Xmx=512m
 dalvik.vm.image-dex2oat-Xms=64m
 dalvik.vm.image-dex2oat-Xmx=64m
+dalvik.vm.dex2oat-Xms=64m
+dalvik.vm.dex2oat-Xmx=512m
 ro.dalvik.vm.native.bridge=0
+debug.atrace.tags.enableflags=0
+persist.sys.isUsbOtgEnabled=true
+persist.sys.usb.config=mtp
+camera2.portability.force_api=1
+#
+# BOOTIMAGE_BUILD_PROPERTIES
+#
+ro.bootimage.build.date=Fri Nov 6 21:29:48 PST 2015
+ro.bootimage.build.date.utc=1446874188
+ro.bootimage.build.fingerprint=oneplus/bacon/A0001:6.0/MDB08M/0efe4c979a:userdebug/test-keys
