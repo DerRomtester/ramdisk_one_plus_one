@@ -18,6 +18,6 @@ camera2.portability.force_api=1
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Fri Nov 6 21:29:48 PST 2015
-ro.bootimage.build.date.utc=1446874188
-ro.bootimage.build.fingerprint=oneplus/bacon/A0001:6.0/MDB08M/0efe4c979a:userdebug/test-keys
+ro.bootimage.build.date=Sun Nov 8 19:57:52 PST 2015
+ro.bootimage.build.date.utc=1447041472
+ro.bootimage.build.fingerprint=oneplus/bacon/A0001:6.0/MDB08M/8dce038920:userdebug/test-keys

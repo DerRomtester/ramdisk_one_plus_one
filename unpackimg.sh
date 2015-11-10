@@ -91,5 +91,7 @@ cd ..;
 
 echo " ";
 echo "Done!";
+cd "$PWD";
+chmod -R g-w "$PWD/ramdisk";
 exit 0;
 
