@@ -2,13 +2,14 @@
 # AIK-Linux/repackimg: repack ramdisk and build image
 # osm0sis @ xda-developers
 
-abort() { cd "$PWD"; echo "Error!"; }
+abort() { cd "$aik"; echo "Error!"; }
 
-args="$*";
-bin="$PWD/bin";
-chmod -R 755 "$bin" "$PWD"/*.sh;
-chmod 644 "$bin/magic";
-cd "$PWD";
+aik="${BASH_SOURCE:-$0}";
+aik="$(dirname "$(readlink -f "$aik")")";
+
+cd "$aik";
+chmod -R 755 bin *.sh;
+chmod 644 bin/magic;
 
 arch=`uname -m`;
 
@@ -29,39 +30,54 @@ if [ ! -z "$(ls *-new.* 2> /dev/null)" ]; then
   echo " ";
 fi;
 
-rm -f ramdisk-new.cpio*;
-case $args in
+if [ "$(stat -c %U ramdisk/* | head -n 1)" = "root" ]; then
+  sumsg=" (as root)";
+fi;
+
+rm -f "ramdisk-new.cpio*";
+case $1 in
   --original)
     echo "Repacking with original ramdisk...";;
-  *)
-    echo "Packing ramdisk...";
+  --level|*)
+    echo "Packing ramdisk$sumsg...";
     echo " ";
     ramdiskcomp=`cat split_img/*-ramdiskcomp`;
-    echo "Using compression: $ramdiskcomp";
-    repackcmd="$ramdiskcomp";
+    if [ "$1" = "--level" -a "$2" ]; then
+      level="-$2";
+      lvltxt=" - Level: $2";
+    elif [ "$ramdiskcomp" = "xz" ]; then
+      level=-1;
+    fi;
+    echo "Using compression: $ramdiskcomp$lvltxt";
+    repackcmd="$ramdiskcomp $level";
     compext=$ramdiskcomp;
     case $ramdiskcomp in
       gzip) compext=gz;;
       lzop) compext=lzo;;
-      xz) repackcmd="xz -1 -Ccrc32";;
-      lzma) repackcmd="xz -Flzma";;
+      xz) repackcmd="xz $level -Ccrc32";;
+      lzma) repackcmd="xz $level -Flzma";;
       bzip2) compext=bz2;;
-      lz4) repackcmd="$bin/$arch/lz4 -l stdin stdout";;
+      lz4) repackcmd="../bin/$arch/lz4 $level -l stdin stdout";;
+      *) abort; exit 1;;
     esac;
-    cd ramdisk;
-    find . | cpio -H newc -o 2> /dev/null | $repackcmd > ../ramdisk-new.cpio.$compext;
+    if [ "$sumsg" ]; then
+      cd ramdisk;
+      sudo find . | sudo cpio -H newc -o 2> /dev/null | $repackcmd > ../ramdisk-new.cpio.$compext;
+      cd ..;
+    else
+      bin/$arch/mkbootfs ramdisk | $repackcmd > ramdisk-new.cpio.$compext;
+    fi;
     if [ ! $? -eq "0" ]; then
       abort;
       exit 1;
-    fi;
-    cd ..;;
+    fi;;
 esac;
 
 echo " ";
 echo "Getting build information...";
 cd split_img;
 kernel=`ls *-zImage`;               echo "kernel = $kernel";
-if [ "$args" = "--original" ]; then
+if [ "$1" = "--original" ]; then
   ramdisk=`ls *-ramdisk.cpio*`;     echo "ramdisk = $ramdisk";
   ramdisk="split_img/$ramdisk";
 else
@@ -89,7 +105,7 @@ cd ..;
 echo " ";
 echo "Building image...";
 echo " ";
-$bin/$arch/mkbootimg --kernel "split_img/$kernel" --ramdisk "$ramdisk" $second --cmdline "$cmdline" --board "$board" --base $base --pagesize $pagesize --kernel_offset $kerneloff --ramdisk_offset $ramdiskoff $secondoff --tags_offset $tagsoff $dtb -o image-new.img;
+bin/$arch/mkbootimg --kernel "split_img/$kernel" --ramdisk "$ramdisk" $second --cmdline "$cmdline" --board "$board" --base $base --pagesize $pagesize --kernel_offset $kerneloff --ramdisk_offset $ramdiskoff $secondoff --tags_offset $tagsoff $dtb -o image-new.img;
 if [ ! $? -eq "0" ]; then
   abort;
   exit 1;
